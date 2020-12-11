@@ -1,0 +1,209 @@
+﻿
+@{
+    ViewData["Title"] = "Listado de productos";
+}
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+        ConsultAllProducts();
+        $("#btnGuardar").show();
+        $("#btnActualizar").hide();
+    });
+
+    function executeEdit(id) {
+        ConsultProduct(id);
+        $("#btnGuardar").hide();
+        $("#btnActualizar").show();
+    }
+
+    function ConsultAllProducts() {
+        $.ajax({
+            type: "GET",
+            url: "https://localhost:44321/api/products",
+            success: function (listProducts) {
+                try {                   
+                    if (listProducts != null) {
+                        FillListProduct(listProducts);
+                    }
+                } catch (e) { }
+            }
+        });
+    }
+
+    function FillListProduct(listProducts) {
+        var valuehtml = "";
+        $.each(listProducts, function (index, prod) {
+            valuehtml += '<tr id="rowb' + prod.id + '">';
+            valuehtml += '<td>' + prod.name + '</td>';
+            valuehtml += '<td>' + prod.description + '</td>';
+            valuehtml += '<td>' + prod.categoryType + '</td>';
+            valuehtml += '<td>' + prod.price + '</td>';
+            valuehtml += '<td>' + prod.quantity + '</td>';
+            valuehtml += '<td><a id="' + prod.id + '" href="#" title="editar" onclick="executeEdit(this.id)" >Editar</a></td>';
+            valuehtml += '<td><a id="' + prod.id + '" href="#" title="eliminar" onclick="DeleteProduct(this.id)" >Eliminar</a></td>';
+            valuehtml += '</tr>';
+        });
+        $('#tProducts >tbody').html(valuehtml);
+    }
+
+    function createProduct() {
+        var parametros = {
+            Name: $("#inputNombre").val(),
+            Description: $("#inputDescripcion").val(),
+            CategoryType: $("#inputCategoria").val(),
+            Price: $("#inputPrecio").val(),
+            Quantity: $("#inputCantidad").val()
+        }
+        $.ajax({
+            type: "POST",
+            url: "https://localhost:44321/api/products",
+            dataType: "json",
+            data: JSON.stringify(parametros),
+            headers: {
+                "Content-Type": "application/json"
+            },
+            success: function (listProducts) {
+                try {
+                    if (listProducts != null) {
+                        FillListProduct(listProducts);
+                    }
+                } catch (e) { }
+            }
+        });
+    }
+
+    function ConsultProduct(id) {
+        $.ajax({
+            type: "GET",
+            url: "https://localhost:44321/api/products/"+id,            
+            success: function (Product) {
+                try {
+                    if (Product != null) {
+                        $("#inputId").val(Product.id);
+                        $("#inputNombre").val(Product.name);
+                        $("#inputDescripcion").val(Product.description);
+                        $("#inputCategoria").val(Product.categoryType);
+                        $("#inputPrecio").val(Product.price);
+                        $("#inputCantidad").val(Product.quantity);
+                        $("#btnAgregar").click();
+                    }
+                } catch (e) { }
+            }
+        });
+    }
+
+    function EditProductProduct() {
+        var parametros = {
+            Id: $("#inputId").val(),
+            Name: $("#inputNombre").val(),
+            Description: $("#inputDescripcion").val(),
+            CategoryType: $("#inputCategoria").val(),
+            Price: $("#inputPrecio").val(),
+            Quantity: $("#inputCantidad").val()
+        }
+        $.ajax({
+            type: "PUT",
+            url: "https://localhost:44321/api/products",
+            data: JSON.stringify(parametros),
+            headers: {
+                "Content-Type": "application/json"
+            },
+            success: function (listProducts) {
+                try {
+                    if (listProducts != null) {
+                        FillListProduct(listProducts);
+                        $("#btnGuardar").show();
+                        $("#btnActualizar").hide();
+                    }
+                } catch (e) { }
+            }
+        });
+    }
+
+    function DeleteProduct(id) {
+        $.ajax({
+            type: "DELETE",
+            url: "https://localhost:44321/api/products/" + id,
+            success: function (listProducts) {
+                try {
+                    if (listProducts != null) {
+                        FillListProduct(listProducts);                       
+                    }
+                } catch (e) { }
+            }
+        });
+    }
+</script>
+<h2>Listado de Productos</h2>
+<button id="btnAgregar" data-toggle="modal" data-target="#formProduct">Agregar</button>
+<br />
+<br />
+<table id="tProducts" class="table table-bordered table-inverse dt-responsive">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Categoria</th>
+            <th>Precio</th>
+            <th>Cantidad</th>
+            <th>Editar</th>
+            <th>Eliminar</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+ 
+<div class="modal fade" id="formProduct">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            
+            <!-- successLogout Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Alta de Nuevo Producto</h4>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label class="control-label" for="inputNombre"><span style="color: red;">*</span>  Nombre</label>
+                    <input type="hidden" class="form-control" id="inputId" name="inputId">
+                    <input type="text" class="form-control" id="inputNombre" name="inputNombre" placeholder="Nombre">
+                </div>
+                <div class="form-group col-md-12">
+                    <label class="control-label" for="inputDescripcion"><span style="color: red;">*</span>  Descripcion</label>
+                    <input type="text" class="form-control" id="inputDescripcion" name="inputDescripcion" placeholder="Descripcion">
+                </div>
+                <div class="form-group col-md-12">
+                    <label class="control-label" for="inputCategoria"><span style="color: red;">*</span> Categoria</label>
+                    <select id="inputCategoria" name="inputCategoria" class="form-control">
+                        <option value="0">ELEGIR...</option>
+                        <option value="Comida">Comida</option>
+                        <option value="Servicio">Servicio</option>
+                        <option value="Salud">Salud</option>
+                        <option value="Basico">Basico</option>
+                    </select>
+
+                </div>
+
+                <div class="form-group col-md-12">
+                    <label class="control-label" for="inputPrecio"><span style="color: red;">*</span>  Precio</label>
+                    <input type="text" class="form-control" id="inputPrecio" name="inputPrecio" placeholder="Precio">
+                </div>
+
+                <div class="form-group col-md-12">
+                    <label class="control-label" for="inputCantidad"><span style="color: red;">*</span>  Cantidad</label>
+                    <input type="text" class="form-control" id="inputCantidad" name="inputCantidad" placeholder="Cantidad">
+                </div>
+            </div>
+
+
+            <!-- successLogout footer -->
+            <div class="modal-footer">
+                <button id="btnGuardar" type="button" class="btn btn-success" data-dismiss="modal" onclick="createProduct();"> Guardar</button>
+                <button id="btnActualizar" type="button" class="btn btn-success" data-dismiss="modal" onclick="EditProductProduct();"> Guardar</button>
+
+
+            </div>
+        </div>
+    </div>
+</div>
